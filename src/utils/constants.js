@@ -38,7 +38,7 @@ const SASIH = [
 const SASIH_DATE_TYPE = ["", "Hud", "Tang"];
 const SECRET_KEY = "12234597asdas7982131";
 
-const BASE_URL = "http://localhost/kalender-tenganan";
+const BASE_URL = "https://kalender-tenganan-server.000webhostapp.com";
 
 export {
   DISPATCH_SET_VALUE,

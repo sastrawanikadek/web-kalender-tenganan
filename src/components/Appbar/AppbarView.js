@@ -12,7 +12,7 @@ import ChevronRightIcon from "mdi-react/ChevronRightIcon";
 import { createUseStyles } from "react-jss";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
-import { color } from "../../utils/theme";
+import { color, breakpoints } from "../../utils/theme";
 
 const useStyles = createUseStyles({
   root: {
@@ -24,7 +24,9 @@ const useStyles = createUseStyles({
     boxSizing: "border-box",
   },
   title: {
-    marginRight: 32,
+    [breakpoints.up("sm")]: {
+      marginRight: 32,
+    },
   },
   iconButton: {
     padding: 4,

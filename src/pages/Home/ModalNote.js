@@ -37,6 +37,10 @@ const useStyles = createUseStyles({
   divider: {
     height: 0.9,
   },
+  btnDelete: {
+    marginTop: 24,
+    color: color.accent,
+  },
 });
 
 const ModalNote = (props) => {
@@ -76,8 +80,19 @@ const ModalNote = (props) => {
         </Grid>
         <Divider className={classes.divider} />
         <div className={classes.section}>
-          <Button variant="outlined" onClick={() => onClick(data)} fullWidth>
+          <Button
+            variant="outlined"
+            onClick={() => onClick(data, "update")}
+            fullWidth
+          >
             Ubah Catatan
+          </Button>
+          <Button
+            className={classes.btnDelete}
+            onClick={() => onClick(data, "delete")}
+            fullWidth
+          >
+            Hapus Catatan
           </Button>
         </div>
       </div>

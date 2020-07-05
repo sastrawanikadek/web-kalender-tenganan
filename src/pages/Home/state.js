@@ -324,6 +324,7 @@ const ContextProvider = ({ children }) => {
       name: "loggedIn",
       value: false,
     });
+    handleGetCalendar();
   };
 
   const handleClickCalendar = (data) => {
@@ -354,7 +355,7 @@ const ContextProvider = ({ children }) => {
     });
   };
 
-  const handleClickNote = (data) => {
+  const handleClickNote = (data, mode) => {
     const {
       id_catatan,
       id_sasih,
@@ -386,7 +387,7 @@ const ContextProvider = ({ children }) => {
       name: "modal",
       value: {
         show: true,
-        mode: "update",
+        mode: mode,
       },
     });
   };
@@ -583,6 +584,79 @@ const ContextProvider = ({ children }) => {
     return;
   };
 
+  const handleDeleteNote = async (e) => {
+    const { id_catatan } = state.form;
+
+    e.preventDefault();
+    dispatch({
+      type: DISPATCH_SET_TOAST,
+      variant: "normal",
+      message: "Mohon tunggu, proses sedang berlangsung",
+    });
+    dispatch({
+      type: DISPATCH_SET_VALUE,
+      name: "process",
+      value: true,
+    });
+
+    const formData = new FormData();
+    formData.append("id_catatan", id_catatan);
+
+    const request = await fetch(`${BASE_URL}/delete_note.php`, {
+      method: "POST",
+      body: formData,
+    });
+
+    try {
+      const result = await request.json();
+
+      if (result.status === 200) {
+        dispatch({
+          type: DISPATCH_SET_TOAST,
+          variant: "success",
+          message: result.message,
+        });
+
+        await handleGetCalendar();
+
+        dispatch({
+          type: DISPATCH_SET_VALUE,
+          name: "modal",
+          value: { ...state.modal, show: false },
+        });
+
+        dispatch({
+          type: DISPATCH_SET_VALUE,
+          name: "inlineModal",
+          value: {
+            target: null,
+            data: null,
+            mode: "",
+          },
+        });
+      } else {
+        dispatch({
+          type: DISPATCH_SET_TOAST,
+          variant: result.status === 400 ? "warning" : "error",
+          message: result.message,
+        });
+      }
+    } catch (err) {
+      dispatch({
+        type: DISPATCH_SET_TOAST,
+        variant: "error",
+        message: "Proses gagal, silahkan coba kembali...",
+      });
+    }
+
+    dispatch({
+      type: DISPATCH_SET_VALUE,
+      name: "process",
+      value: false,
+    });
+    return;
+  };
+
   useEffect(() => {
     handleGetCalendar();
   }, [state.date]);
@@ -625,15 +699,22 @@ const ContextProvider = ({ children }) => {
         header={
           <div>
             <Text variant="h6">
-              {state.modal.mode === "add" ? "Tambah" : "Ubah"} Catatan
-            </Text>
-            <Text variant="paragraph" noMargin>
-              Mohon isikan semua kolom berikut untuk
               {state.modal.mode === "add"
-                ? " menambahkan catatan "
-                : " mengubah catatan "}
-              Anda
+                ? "Tambah"
+                : state.modal.mode === "update"
+                ? "Ubah"
+                : "Hapus"}{" "}
+              Catatan
             </Text>
+            {state.modal.mode !== "delete" && (
+              <Text variant="paragraph" noMargin>
+                Mohon isikan semua kolom berikut untuk
+                {state.modal.mode === "add"
+                  ? " menambahkan catatan "
+                  : " mengubah catatan "}
+                Anda
+              </Text>
+            )}
           </div>
         }
         show={state.modal.show}
@@ -657,53 +738,63 @@ const ContextProvider = ({ children }) => {
               ? (e) => e.preventDefault()
               : state.modal.mode === "add"
               ? handleAddNote
-              : handleUpdateNote
+              : state.modal.mode === "update"
+              ? handleUpdateNote
+              : handleDeleteNote
           }
         >
-          <TextInput
-            variant="outlined"
-            label="Tanggal Masehi"
-            value={format(new Date(state.form.tgl_masehi), "dd MMMM yyyy", {
-              locale: id,
-            })}
-            fullWidth
-            readonly
-          />
-          <TextInput
-            variant="outlined"
-            label="Judul"
-            value={state.form.judul}
-            onChange={(e) =>
-              dispatch({
-                type: DISPATCH_SET_VALUE,
-                name: "form",
-                value: { ...state.form, judul: e.target.value },
-              })
-            }
-            fullWidth
-            required
-          />
-          <TextInput
-            variant="outlined"
-            label="Catatan"
-            value={state.form.catatan}
-            onChange={(e) =>
-              dispatch({
-                type: DISPATCH_SET_VALUE,
-                name: "form",
-                value: { ...state.form, catatan: e.target.value },
-              })
-            }
-            fullWidth
-            multiline
-            required
-          />
+          {state.modal.mode === "delete" ? (
+            <Text variant="paragraph" noMargin>
+              Apakah Anda yakin ingin menghapus catatan ini?
+            </Text>
+          ) : (
+            <>
+              <TextInput
+                variant="outlined"
+                label="Tanggal Masehi"
+                value={format(new Date(state.form.tgl_masehi), "dd MMMM yyyy", {
+                  locale: id,
+                })}
+                fullWidth
+                readonly
+              />
+              <TextInput
+                variant="outlined"
+                label="Judul"
+                value={state.form.judul}
+                onChange={(e) =>
+                  dispatch({
+                    type: DISPATCH_SET_VALUE,
+                    name: "form",
+                    value: { ...state.form, judul: e.target.value },
+                  })
+                }
+                fullWidth
+                required
+              />
+              <TextInput
+                variant="outlined"
+                label="Catatan"
+                value={state.form.catatan}
+                onChange={(e) =>
+                  dispatch({
+                    type: DISPATCH_SET_VALUE,
+                    name: "form",
+                    value: { ...state.form, catatan: e.target.value },
+                  })
+                }
+                fullWidth
+                multiline
+                required
+              />
+            </>
+          )}
           <Button
             type="submit"
             variant="outlined"
             className={classes.modalSubmitButton}
           >
-            Simpan
+            {state.modal.mode === "delete" ? "Hapus" : "Simpan"}
           </Button>
         </form>
       </Modal>
