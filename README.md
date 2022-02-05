@@ -1,3 +1,7 @@
+# Kalender Tenganan
+A website that shows a calendar and ceremony from Tenganan (a region in Bali)
+![image](https://user-images.githubusercontent.com/37144427/152635779-34bb7e2c-c10a-42a0-bf6a-0cd8a6b33943.png)
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
